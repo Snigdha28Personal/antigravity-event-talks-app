@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
         visibleCount: document.getElementById('visibleCount'),
         totalCount: document.getElementById('totalCount'),
         exportCsvBtn: document.getElementById('exportCsvBtn'),
+        themeToggleBtn: document.getElementById('themeToggleBtn'),
+        themeIcon: document.getElementById('themeIcon'),
+        themeLabel: document.getElementById('themeLabel'),
         
         // Modal Elements
         tweetModal: document.getElementById('tweetModal'),
@@ -47,11 +50,44 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
 
     function init() {
+        initTheme();
         bindEvents();
         fetchNotes();
     }
 
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        applyTheme(savedTheme);
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+
+        if (elements.themeIcon && elements.themeLabel) {
+            if (theme === 'light') {
+                elements.themeIcon.className = 'fa-solid fa-sun';
+                elements.themeLabel.textContent = 'Light Mode';
+            } else {
+                elements.themeIcon.className = 'fa-solid fa-moon';
+                elements.themeLabel.textContent = 'Dark Mode';
+            }
+        }
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+        showToast(`Switched to ${newTheme === 'light' ? 'Light' : 'Dark'} Mode`, 'info');
+    }
+
     function bindEvents() {
+        // Theme Toggle Button
+        if (elements.themeToggleBtn) {
+            elements.themeToggleBtn.addEventListener('click', toggleTheme);
+        }
+
         // Refresh Button
         elements.refreshBtn.addEventListener('click', () => {
             if (!state.isRefreshing) {

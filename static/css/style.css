@@ -41,6 +41,36 @@
     --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Light Theme Variables Override */
+[data-theme="light"] {
+    --bg-dark: #f8fafc;
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-card-hover: rgba(241, 245, 249, 0.98);
+    --bg-input: #ffffff;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-glow: rgba(2, 132, 199, 0.35);
+    
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --text-dim: #64748b;
+    
+    --accent-blue: #0284c7;
+    --accent-indigo: #4338ca;
+    
+    --tag-ga-bg: rgba(52, 211, 153, 0.18);
+    --tag-ga-color: #047857;
+    --tag-feature-bg: rgba(56, 189, 248, 0.18);
+    --tag-feature-color: #0369a1;
+    --tag-preview-bg: rgba(192, 132, 252, 0.18);
+    --tag-preview-color: #7e22ce;
+    --tag-changed-bg: rgba(251, 191, 36, 0.18);
+    --tag-changed-color: #b45309;
+    --tag-deprecated-bg: rgba(244, 63, 94, 0.18);
+    --tag-deprecated-color: #be123c;
+    
+    --shadow-main: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -111,7 +141,7 @@ body {
     font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: -0.02em;
-    color: #fff;
+    color: var(--text-main);
 }
 
 .header-title h1 span {
@@ -462,7 +492,7 @@ body {
     font-size: 1.2rem;
     font-weight: 700;
     line-height: 1.4;
-    color: #fff;
+    color: var(--text-main);
 }
 
 .note-title a {
