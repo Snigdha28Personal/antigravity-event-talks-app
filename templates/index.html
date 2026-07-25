@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes & Tweet Hub</title>
+    <meta name="description" content="Track, search, and tweet about the latest Google Cloud BigQuery updates and release notes.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation / Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="url(#bq-grad1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 17L12 22L22 17" stroke="url(#bq-grad2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="url(#bq-grad1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="bq-grad1" x1="2" y1="2" x2="22" y2="12" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#38bdf8"/>
+                                <stop offset="1" stop-color="#818cf8"/>
+                            </linearGradient>
+                            <linearGradient id="bq-grad2" x1="2" y1="12" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#818cf8"/>
+                                <stop offset="1" stop-color="#c084fc"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="header-title">
+                    <h1>BigQuery <span>Release Radar</span></h1>
+                    <p class="subtitle">Real-time updates directly from Google Cloud</p>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="status-badge" id="lastUpdatedBadge">
+                    <span class="pulse-dot"></span>
+                    <span id="lastUpdatedText">Syncing feed...</span>
+                </div>
+
+                <button class="btn btn-primary btn-refresh" id="refreshBtn" title="Fetch latest release notes">
+                    <svg class="spinner-icon hidden" id="refreshSpinner" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10" stroke-width="3" stroke-dasharray="32" stroke-dashoffset="10"></circle>
+                    </svg>
+                    <i class="fa-solid fa-rotate-right" id="refreshIcon"></i>
+                    <span>Refresh Notes</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-main">
+            <!-- Filter & Search Control Panel -->
+            <section class="control-panel">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search BigQuery release notes (e.g. SQL, Vector, Partitioning)...">
+                    <button class="btn-clear hidden" id="clearSearchBtn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="tag-filters" id="tagFilters">
+                        <button class="filter-pill active" data-tag="ALL">All Updates</button>
+                        <button class="filter-pill" data-tag="FEATURE">Features</button>
+                        <button class="filter-pill" data-tag="GA">GA</button>
+                        <button class="filter-pill" data-tag="PREVIEW">Preview</button>
+                        <button class="filter-pill" data-tag="CHANGED">Changed</button>
+                        <button class="filter-pill" data-tag="DEPRECATED">Deprecated</button>
+                    </div>
+
+                    <div class="sort-selector">
+                        <label for="sortSelect"><i class="fa-solid fa-arrow-down-short-wide"></i> Sort:</label>
+                        <select id="sortSelect">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Bar -->
+            <section class="stats-bar">
+                <div class="stats-count">
+                    Showing <strong id="visibleCount">0</strong> of <span id="totalCount">0</span> release updates
+                </div>
+                <div class="source-link">
+                    <a href="https://docs.cloud.google.com/feeds/bigquery-release-notes.xml" target="_blank" rel="noopener">
+                        <i class="fa-solid fa-rss"></i> Raw Feed Source
+                    </a>
+                </div>
+            </section>
+
+            <!-- Notes List / Feed -->
+            <section class="notes-container" id="notesContainer">
+                <!-- Skeleton Loader -->
+                <div class="skeleton-card">
+                    <div class="skeleton-header"></div>
+                    <div class="skeleton-title"></div>
+                    <div class="skeleton-body"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-header"></div>
+                    <div class="skeleton-title"></div>
+                    <div class="skeleton-body"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>BigQuery Release Notes Fetcher & Analytics &bull; Built with Flask &amp; Vanilla Web</p>
+        </footer>
+    </div>
+
+    <!-- Tweet Composer Modal -->
+    <div class="modal-overlay hidden" id="tweetModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-brands fa-x-twitter"></i>
+                    <span>Compose Tweet</span>
+                </div>
+                <button class="modal-close" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="selected-note-preview">
+                    <span class="preview-label">Target Release Update</span>
+                    <h4 id="modalNoteTitle">BigQuery Update Title</h4>
+                    <span class="modal-note-date" id="modalNoteDate">Date</span>
+                </div>
+
+                <div class="tweet-textarea-wrapper">
+                    <label for="tweetTextarea">Tweet Message Preview</label>
+                    <textarea id="tweetTextarea" rows="5" maxlength="280"></textarea>
+                    <div class="textarea-footer">
+                        <div class="char-count" id="charCounter">
+                            <span id="charCount">0</span> / 280
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hashtag-suggestions">
+                    <span class="suggestion-label">Add Hashtags:</span>
+                    <button class="hashtag-btn active" data-tag="#BigQuery">#BigQuery</button>
+                    <button class="hashtag-btn active" data-tag="#GoogleCloud">#GoogleCloud</button>
+                    <button class="hashtag-btn" data-tag="#DataEngineering">#DataEngineering</button>
+                    <button class="hashtag-btn" data-tag="#SQL">#SQL</button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="copyTweetBtn">
+                    <i class="fa-regular fa-copy"></i> Copy Text
+                </button>
+                <button class="btn btn-x" id="postTweetBtn">
+                    <i class="fa-brands fa-x-twitter"></i> Tweet on X
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- App JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
