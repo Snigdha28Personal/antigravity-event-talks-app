@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         notesContainer: document.getElementById('notesContainer'),
         visibleCount: document.getElementById('visibleCount'),
         totalCount: document.getElementById('totalCount'),
+        exportCsvBtn: document.getElementById('exportCsvBtn'),
         
         // Modal Elements
         tweetModal: document.getElementById('tweetModal'),
@@ -92,6 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
             state.sortBy = e.target.value;
             renderNotes();
         });
+
+        // Export CSV Button
+        if (elements.exportCsvBtn) {
+            elements.exportCsvBtn.addEventListener('click', exportToCSV);
+        }
 
         // Tweet Modal Actions
         elements.closeModalBtn.addEventListener('click', closeModal);
@@ -244,12 +250,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 const noteId = e.currentTarget.getAttribute('data-id');
                 const targetNote = state.allNotes.find(n => n.id === noteId);
                 if (targetNote) {
-                    const text = `${targetNote.title} (${targetNote.date})\n${targetNote.link}`;
-                    navigator.clipboard.writeText(text);
-                    showToast('Copied update link to clipboard!', 'success');
+                    const textToCopy = `📌 ${targetNote.title} (${targetNote.date})\n\n${targetNote.text_content}\n\n🔗 ${targetNote.link}`;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showToast('Copied update details & link to clipboard!', 'success');
+                    }).catch(() => {
+                        showToast('Failed to copy text', 'error');
+                    });
                 }
             });
         });
+    }
+
+    function exportToCSV() {
+        const notesToExport = state.visibleNotes.length > 0 ? state.visibleNotes : state.allNotes;
+        if (notesToExport.length === 0) {
+            showToast('No release notes available to export.', 'warning');
+            return;
+        }
+
+        const headers = ['Date', 'Title', 'Categories', 'Link', 'Summary'];
+        const csvRows = [headers.join(',')];
+
+        notesToExport.forEach(note => {
+            const dateStr = `"${(note.date || '').replace(/"/g, '""')}"`;
+            const titleStr = `"${(note.title || '').replace(/"/g, '""')}"`;
+            const tagsStr = `"${((note.tags || []).join('; ')).replace(/"/g, '""')}"`;
+            const linkStr = `"${(note.link || '').replace(/"/g, '""')}"`;
+            const summaryStr = `"${(note.text_content || '').replace(/\r?\n|\r/g, ' ').replace(/"/g, '""')}"`;
+
+            csvRows.push([dateStr, titleStr, tagsStr, linkStr, summaryStr].join(','));
+        });
+
+        const csvContent = '\uFEFF' + csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        const filenameDate = new Date().toISOString().split('T')[0];
+        link.setAttribute('download', `bigquery_release_notes_${filenameDate}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast(`Exported ${notesToExport.length} updates to CSV file!`, 'success');
     }
 
     function createNoteCardHTML(note) {

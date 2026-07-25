@@ -352,10 +352,18 @@ body {
     padding: 0 4px;
     font-size: 0.85rem;
     color: var(--text-muted);
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .stats-count strong {
     color: var(--accent-blue);
+}
+
+.stats-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
 .source-link a {
